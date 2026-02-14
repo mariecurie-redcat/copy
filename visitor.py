@@ -3,8 +3,10 @@ from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 from typing import Generic , TypeVar
 
+from tokens import Token, TokenType
+
 if TYPE_CHECKING:
-    from expr import Binary, Grouping, Literal, Unary
+    from expr import Binary, Grouping, Literal, Unary,Expr
 
 R = TypeVar('R')
 
@@ -51,3 +53,70 @@ class AstPrinter(Visitor[str]):
     
     def print(self, expr):
         print(expr.accept(self))
+
+
+class Interpreter(Visitor[object]):
+    def visitBinaryExpr(self, expr):
+        # 算术运算符
+        if expr.operator.type in (TokenType.MINUS, TokenType.PLUS, TokenType.SLASH, TokenType.STAR):
+            print(f"--------expr.operator {expr.right is None}")
+            print(f"--------{repr(expr)}")
+            left = self.visit(expr.left)
+            right = self.visit(expr.right) 
+            self.checkNumberOperand(expr.operator, left, right)
+            if(expr.operator.type == TokenType.MINUS):
+                return left - right
+            if(expr.operator.type == TokenType.PLUS):
+                return left + right
+            if(expr.operator.type == TokenType.SLASH):
+                return left / right
+            if(expr.operator.type == TokenType.STAR):
+                return left * right
+        # 比较运算符
+        if expr.operator.type in (TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL):
+            left = self.visit(expr.left)
+            right = self.visit(expr.right) 
+            self.checkNumberOperand(expr.operator, left, right)
+            if(expr.operator.type == TokenType.GREATER):
+                return left > right
+            if(expr.operator.type == TokenType.GREATER_EQUAL):
+                return left >= right
+            if(expr.operator.type == TokenType.LESS):
+                return left < right
+            if(expr.operator.type == TokenType.LESS_EQUAL):
+                return left <= right
+        # 相等运算符
+        if expr.operator.type in (TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL):
+            left = self.visit(expr.left)
+            right = self.visit(expr.right) 
+        
+            if(expr.operator.type == TokenType.EQUAL_EQUAL):
+                return left == right
+            if(expr.operator.type == TokenType.BANG_EQUAL):
+                return left != right
+        raise RuntimeError("Unknown operator")
+
+    def visitLiteralExpr(self, expr):
+        print(f"--------expr.value: {expr.value}")
+        return float(expr.value)
+
+    def visitUnaryExpr(self, expr):
+        if expr.operator.type == TokenType.MINUS:
+            print(f"--------expr.right.value: {expr.right is None}")
+            right = self.visit(expr.right) 
+            self.checkNumberOperand(expr.operator, right)
+            return -right
+        if expr.operator.type == TokenType.BANG:
+            return not self.visit(expr.right)
+        raise RuntimeError("Unknown unary operator")
+
+    def visitGroupingExpr(self, expr):
+        return self.visit(expr.expression)
+    
+    def visit(self, expr:Expr):
+        return expr.accept(self)
+    
+    def checkNumberOperand(self, operator:Token, operand:object,right:object =None):
+        if isinstance(operand, (int, float)) and (isinstance(right, (int, float)) or right is None):
+            return
+        raise RuntimeError(f"Operand must be a number.")

@@ -19,6 +19,8 @@ class Binary(Expr):
         self.right = right
     def accept(self, visitor):
         return visitor.visitBinaryExpr(self)
+    def __repr__(self):
+        return f"({self.operator.lexeme} {self.left} {self.right})"
 
 class Grouping(Expr):
     expression:Expr
@@ -27,6 +29,10 @@ class Grouping(Expr):
     
     def accept(self, visitor):
         return visitor.visitGroupingExpr(self)
+    def __repr__(self):
+        return f"({self.expression})"
+
+
 
 class Literal(Expr):
     value:object
@@ -35,6 +41,8 @@ class Literal(Expr):
 
     def accept(self, visitor):
         return visitor.visitLiteralExpr(self)
+    def __repr__(self):
+        return f"{self.value}"
     
 class Unary(Expr):
     operator:Token
@@ -46,4 +54,6 @@ class Unary(Expr):
 
     def accept(self, visitor):
         return visitor.visitUnaryExpr(self)
+    def __repr__(self):
+        return f"({self.operator.lexeme} {self.right})"
     

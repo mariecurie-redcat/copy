@@ -56,9 +56,9 @@ class Scanner:
         elif c == '>':
             self.add_token(TokenType.GREATER_EQUAL if self.match('=') else TokenType.GREATER)
         elif c == '(':
-            self.add_token(TokenType.LEFT_PARTEN)
+            self.add_token(TokenType.LEFT_PAREN)
         elif c == ')':
-            self.add_token(TokenType.RIGHT_PARTEN)
+            self.add_token(TokenType.RIGHT_PAREN)
         elif c == '{':
             self.add_token(TokenType.LEFT_BRACE)
         elif c == '}':
