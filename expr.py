@@ -1,8 +1,8 @@
 from tokens import Token
 from abc import ABC,abstractmethod
 from typing import Generic , TypeVar
+from visitor import R, Visitor
 
-R = TypeVar('R')
 
 class Expr:
     @abstractmethod
@@ -17,38 +17,33 @@ class Binary(Expr):
         self.left = left
         self.operator = operator
         self.right = right
+    def accept(self, visitor):
+        return visitor.visitBinaryExpr(self)
 
 class Grouping(Expr):
     expression:Expr
     def __init__(self, expression):
         self.expression = expression
+    
+    def accept(self, visitor):
+        return visitor.visitGroupingExpr(self)
 
 class Literal(Expr):
     value:object
     def __init__(self, value):
         self.value =value
+
+    def accept(self, visitor):
+        return visitor.visitLiteralExpr(self)
     
 class Unary(Expr):
     operator:Token
     right:Expr
+    
     def __init__(self,operator,right):
         self.operator =operator
         self.right = right
 
-
-class Visitor(ABC,Generic[R]):
-    @abstractmethod
-    def visitBinaryExpr(self,expr:Binary)->R:
-        pass
+    def accept(self, visitor):
+        return visitor.visitUnaryExpr(self)
     
-    @abstractmethod
-    def visitUnaryExpr(self,expr:Unary)->R:
-        pass
-
-    @abstractmethod
-    def visitGroupingExpr(self,expr:Grouping)->R:
-        pass
-
-    @abstractmethod
-    def visitLiteralExpr(self,expr:Literal)->R:
-        pass
