@@ -1,4 +1,4 @@
-from expr import Binary, Grouping, Literal
+from expr import Binary, Grouping, Literal, Unary
 from tokens import Token, TokenType
 
 # expression     → equality ;
@@ -44,17 +44,21 @@ class LxoParser:
     
     def factor(self):
         expr = self.unary()
+       
         while self.match(TokenType.SLASH, TokenType.STAR):
+            print("-------------------")
+            print(repr(self.peek()))
             operator = self.previous()
             right = self.unary()
             expr = Binary(expr, operator, right)
         return expr
     
     def unary(self):
+        print(repr(self.peek()))
         if self.match(TokenType.BANG, TokenType.MINUS):
             operator = self.previous()
             right = self.unary()
-            return Binary(right, operator, None)
+            return Unary(operator, right)
         return self.primary()
     
     def primary(self):

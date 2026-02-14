@@ -13,8 +13,8 @@ tokens = scanner.scanTokens()
 
 for token in tokens:
     print(token)
-# print(Interpreter().visit(LxoParser(tokens).equality()))
-AstPrinter().print(LxoParser(tokens).equality())
+print(Interpreter().visit(LxoParser(tokens).equality()))
+# AstPrinter().print(LxoParser(tokens).equality())
 
 
 def error(token:Token,messege:str):
