@@ -1,4 +1,5 @@
 from expr import Binary, Grouping, Literal, Unary
+from stmt import Expression, Expression, Print
 from tokens import Token, TokenType
 
 # expression     → equality ;
@@ -44,10 +45,7 @@ class LxoParser:
     
     def factor(self):
         expr = self.unary()
-       
         while self.match(TokenType.SLASH, TokenType.STAR):
-            print("-------------------")
-            print(repr(self.peek()))
             operator = self.previous()
             right = self.unary()
             expr = Binary(expr, operator, right)
@@ -119,3 +117,24 @@ class LxoParser:
                         TokenType.WHILE, TokenType.PRINT, TokenType.RETURN):
                 return
             self.advance()
+
+    def parse(self):
+        statements = []
+        while not self.isAtEnd():
+            statements.append(self.statement())
+        return statements
+    
+    def statement(self):
+        if self.match(TokenType.PRINT):
+            return self.printStatement()
+        return self.expressionStatement()
+    
+    def printStatement(self):
+        value = self.equality()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return Print(value)
+    
+    def expressionStatement(self):
+        expr = self.equality()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
+        return Expression(expr)

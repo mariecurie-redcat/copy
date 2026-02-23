@@ -13,7 +13,7 @@ tokens = scanner.scanTokens()
 
 for token in tokens:
     print(token)
-print(Interpreter().visit(LxoParser(tokens).equality()))
+print(Interpreter().interpret(LxoParser(tokens).parse()))
 # AstPrinter().print(LxoParser(tokens).equality())
 
 

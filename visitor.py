@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 from typing import Generic , TypeVar
 
+from stmt import Expression, Print, Stmt, StmtVisitor
 from tokens import Token, TokenType
 
 if TYPE_CHECKING:
@@ -55,14 +56,14 @@ class AstPrinter(Visitor[str]):
         print(expr.accept(self))
 
 
-class Interpreter(Visitor[object]):
+class Interpreter(Visitor[object],StmtVisitor):
     def visitBinaryExpr(self, expr):
         # 算术运算符
         if expr.operator.type in (TokenType.MINUS, TokenType.PLUS, TokenType.SLASH, TokenType.STAR):
             print(f"--------expr.operator {expr.right is None}")
             print(f"--------{repr(expr)}")
-            left = self.visit(expr.left)
-            right = self.visit(expr.right) 
+            left = float(self.visit(expr.left))
+            right = float(self.visit(expr.right)) 
             self.checkNumberOperand(expr.operator, left, right)
             if(expr.operator.type == TokenType.MINUS):
                 return left - right
@@ -74,8 +75,8 @@ class Interpreter(Visitor[object]):
                 return left * right
         # 比较运算符
         if expr.operator.type in (TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL):
-            left = self.visit(expr.left)
-            right = self.visit(expr.right) 
+            left =float( self.visit(expr.left))
+            right = float(self.visit(expr.right)) 
             self.checkNumberOperand(expr.operator, left, right)
             if(expr.operator.type == TokenType.GREATER):
                 return left > right
@@ -87,8 +88,8 @@ class Interpreter(Visitor[object]):
                 return left <= right
         # 相等运算符
         if expr.operator.type in (TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL):
-            left = self.visit(expr.left)
-            right = self.visit(expr.right) 
+            left =float( self.visit(expr.left))
+            right =float( self.visit(expr.right) )
         
             if(expr.operator.type == TokenType.EQUAL_EQUAL):
                 return left == right
@@ -98,7 +99,7 @@ class Interpreter(Visitor[object]):
 
     def visitLiteralExpr(self, expr):
         print(f"--------expr.value: {expr.value}")
-        return float(expr.value)
+        return expr.value
 
     def visitUnaryExpr(self, expr):
         if expr.operator.type == TokenType.MINUS:
@@ -120,3 +121,18 @@ class Interpreter(Visitor[object]):
         if isinstance(operand, (int, float)) and (isinstance(right, (int, float)) or right is None):
             return
         raise RuntimeError(f"Operand must be a number.")
+    
+    def visitExpressionStmt(self, stmt:Expression):
+        value = self.visit(stmt.expression)
+        # print(value)
+    
+    def visitPrintStmt(self, stmt:Print):
+        value = self.visit(stmt.expression)
+        print(value)
+
+    def interpret(self, statements:list[Stmt]):
+        for statement in statements:
+            self.execute(statement)
+
+    def execute(self, stmt:Stmt):
+        stmt.accept(self)
